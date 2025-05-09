@@ -15,8 +15,10 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/ui/use-toast';
-import { Settings } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Settings, CheckCircle2, XCircle } from 'lucide-react';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { testEvolutionApiConnection } from '@/services/evolutionApiService';
 
 const settingsSchema = z.object({
   apiUrl: z.string().url({ message: 'URL inválida' }),
@@ -30,6 +32,8 @@ type SettingsFormValues = z.infer<typeof settingsSchema>;
 const AdminSettings = () => {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
   // Get stored settings from localStorage
   const getStoredSettings = (): SettingsFormValues => {
@@ -60,6 +64,7 @@ const AdminSettings = () => {
         title: "Configurações salvas",
         description: "As configurações da Evolution API foram salvas com sucesso.",
       });
+      setTestResult(null); // Reset test result after saving new settings
     } catch (error) {
       console.error('Error saving settings:', error);
       toast({
@@ -72,6 +77,29 @@ const AdminSettings = () => {
     }
   };
 
+  // Test connection to Evolution API
+  const testConnection = async () => {
+    setIsTesting(true);
+    setTestResult(null);
+    
+    try {
+      const formValues = form.getValues();
+      const result = await testEvolutionApiConnection(formValues);
+      setTestResult({ 
+        success: true, 
+        message: "Conexão com a Evolution API estabelecida com sucesso!"
+      });
+    } catch (error) {
+      console.error('Error testing connection:', error);
+      setTestResult({ 
+        success: false, 
+        message: `Falha na conexão: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+      });
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -81,6 +109,23 @@ const AdminSettings = () => {
           <Settings size={24} />
           <h1 className="text-2xl font-bold">Configurações da API</h1>
         </div>
+        
+        {testResult && (
+          <Alert 
+            variant={testResult.success ? "default" : "destructive"}
+            className={`mb-6 ${testResult.success ? 'bg-green-50 border-green-200' : ''}`}
+          >
+            {testResult.success ? (
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+            ) : (
+              <XCircle className="h-4 w-4" />
+            )}
+            <AlertTitle className={testResult.success ? 'text-green-600' : ''}>
+              {testResult.success ? 'Teste de conexão bem-sucedido' : 'Erro no teste de conexão'}
+            </AlertTitle>
+            <AlertDescription>{testResult.message}</AlertDescription>
+          </Alert>
+        )}
         
         <Card>
           <CardContent className="p-6">
@@ -142,13 +187,25 @@ const AdminSettings = () => {
                   )}
                 />
                 
-                <Button
-                  type="submit"
-                  className="w-full bg-water hover:bg-water-dark"
-                  disabled={isSaving}
-                >
-                  {isSaving ? "Salvando..." : "Salvar Configurações"}
-                </Button>
+                <div className="flex flex-col gap-4 sm:flex-row">
+                  <Button
+                    type="submit"
+                    className="bg-water hover:bg-water-dark w-full sm:w-1/2"
+                    disabled={isSaving}
+                  >
+                    {isSaving ? "Salvando..." : "Salvar Configurações"}
+                  </Button>
+                  
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    className="w-full sm:w-1/2"
+                    onClick={testConnection}
+                    disabled={isTesting}
+                  >
+                    {isTesting ? "Testando conexão..." : "Testar Conexão"}
+                  </Button>
+                </div>
               </form>
             </Form>
           </CardContent>
