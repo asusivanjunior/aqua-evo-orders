@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -79,11 +78,8 @@ const CheckoutPage = () => {
     };
     
     try {
-      // Replace this with your actual business WhatsApp number
-      const businessPhone = '5511999999999'; 
-      
       // Send the order to WhatsApp
-      const success = await sendOrderToWhatsApp(order, businessPhone);
+      const success = await sendOrderToWhatsApp(order);
       
       if (success) {
         // Clear the cart and show success message

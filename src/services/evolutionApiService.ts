@@ -1,22 +1,33 @@
 
 import { EvolutionAPIMessage, EvolutionAPIResponse, Order } from "@/types";
 
-// This would ideally be an environment variable
-const EVOLUTION_API_URL = "https://your-evolution-api-url.com";
-const INSTANCE_NAME = "your-instance-name";
-const API_KEY = "your-api-key";
+// Get configuration from localStorage
+const getEvolutionApiConfig = () => {
+  const storedSettings = localStorage.getItem('evolutionApiSettings');
+  if (storedSettings) {
+    return JSON.parse(storedSettings);
+  }
+  return {
+    apiUrl: "https://your-evolution-api-url.com",
+    instanceName: "your-instance-name",
+    apiKey: "your-api-key",
+    businessPhone: "5511999999999",
+  };
+};
 
 export const sendWhatsAppMessage = async (
   message: EvolutionAPIMessage
 ): Promise<EvolutionAPIResponse | null> => {
   try {
+    const config = getEvolutionApiConfig();
+    
     const response = await fetch(
-      `${EVOLUTION_API_URL}/message/sendText/${INSTANCE_NAME}`,
+      `${config.apiUrl}/message/sendText/${config.instanceName}`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          apikey: API_KEY,
+          apikey: config.apiKey,
         },
         body: JSON.stringify(message),
       }
@@ -66,13 +77,13 @@ const getPaymentMethodText = (method: 'cash' | 'card' | 'pix'): string => {
 };
 
 export const sendOrderToWhatsApp = async (
-  order: Order,
-  businessPhone: string
+  order: Order
 ): Promise<boolean> => {
   const formattedMessage = formatOrderForWhatsApp(order);
+  const config = getEvolutionApiConfig();
   
   const message: EvolutionAPIMessage = {
-    number: businessPhone,
+    number: config.businessPhone,
     message: formattedMessage,
   };
   
