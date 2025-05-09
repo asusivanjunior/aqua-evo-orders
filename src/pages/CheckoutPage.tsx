@@ -22,7 +22,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/components/ui/use-toast';
 import { sendOrderToWhatsApp } from '@/services/evolutionApiService';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const formSchema = z.object({
   name: z.string().min(3, { message: 'Nome é obrigatório' }),
@@ -83,6 +84,7 @@ const CheckoutPage = () => {
     };
     
     try {
+      console.log("Iniciando processamento do pedido:", order);
       // Send the order to WhatsApp
       await sendOrderToWhatsApp(order);
       
@@ -93,12 +95,16 @@ const CheckoutPage = () => {
         description: "Recebemos seu pedido e entraremos em contato em breve.",
       });
       navigate('/order-confirmation');
-    } catch (error) {
-      console.error('Error submitting order:', error);
-      setErrorMessage("Ocorreu um erro ao processar seu pedido. Verifique as configurações da API ou tente novamente mais tarde.");
+    } catch (error: any) {
+      console.error('Erro ao processar pedido:', error);
+      
+      // Mensagem de erro mais específica
+      const errorMsg = error?.message || "Ocorreu um erro ao processar seu pedido. Verifique as configurações da API ou tente novamente mais tarde.";
+      setErrorMessage(errorMsg);
+      
       toast({
         title: "Erro ao processar pedido",
-        description: "Ocorreu um erro ao processar seu pedido. Por favor, tente novamente.",
+        description: "Ocorreu um erro ao processar seu pedido. Por favor, verifique as configurações da API.",
         variant: "destructive",
       });
     } finally {
@@ -124,6 +130,12 @@ const CheckoutPage = () => {
             <AlertTitle>Erro ao processar pedido</AlertTitle>
             <AlertDescription>
               {errorMessage}
+              <div className="mt-2">
+                <Link to="/admin/settings" className="flex items-center text-sm font-medium underline">
+                  <Settings className="h-4 w-4 mr-1" /> 
+                  Verificar configurações da API
+                </Link>
+              </div>
             </AlertDescription>
           </Alert>
         )}

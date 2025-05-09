@@ -23,42 +23,49 @@ export const sendWhatsAppMessage = async (
     
     // Validar configurações antes de tentar enviar
     if (!config.apiUrl || !config.instanceName || !config.apiKey || !config.businessPhone) {
-      console.error("Configurações da Evolution API incompletas");
+      console.error("Configurações da Evolution API incompletas", config);
       throw new Error("Configurações incompletas. Verifique as configurações da API.");
     }
     
-    // Certifique-se de que a URL da API termina com uma barra se necessário
-    const apiUrl = config.apiUrl.endsWith('/') ? config.apiUrl : `${config.apiUrl}/`;
+    // Normalizar a URL da API removendo barras finais extras
+    let apiUrl = config.apiUrl;
+    while (apiUrl.endsWith('/')) {
+      apiUrl = apiUrl.slice(0, -1);
+    }
+    
+    // Construir o URL da API de forma mais robusta
+    const endpoint = `${apiUrl}/message/sendText/${config.instanceName}`;
     
     console.log("Enviando mensagem para WhatsApp:", {
-      url: `${apiUrl}message/sendText/${config.instanceName}`,
-      message: { ...message, text: message.message } // Evolution API pode esperar "text" em vez de "message"
+      endpoint,
+      instanceName: config.instanceName,
+      number: message.number,
+      messageLength: message.message.length
     });
 
-    const response = await fetch(
-      `${apiUrl}message/sendText/${config.instanceName}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: config.apiKey,
-        },
-        body: JSON.stringify({
-          number: message.number,
-          // A API pode esperar o campo "text" em vez de "message"
-          text: message.message,
-          options: {
-            delay: 1200,
-            presence: "composing"
-          }
-        }),
-      }
-    );
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: config.apiKey,
+      },
+      body: JSON.stringify({
+        number: message.number,
+        text: message.message,
+        options: {
+          delay: 1200,
+          presence: "composing"
+        }
+      }),
+    });
 
+    // Registro detalhado da resposta para ajudar no debug
+    console.log("Status da resposta:", response.status);
+    
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Erro na resposta da API:", errorText);
-      throw new Error(`Erro: ${response.status} - ${errorText}`);
+      console.error("Erro na resposta da API:", response.status, errorText);
+      throw new Error(`Erro: ${response.status} - ${errorText || 'Sem detalhes do erro'}`);
     }
 
     const data = await response.json();
@@ -107,6 +114,14 @@ export const sendOrderToWhatsApp = async (
   try {
     const formattedMessage = formatOrderForWhatsApp(order);
     const config = getEvolutionApiConfig();
+    
+    // Validar as configurações antes de usar
+    if (!config.apiUrl || !config.instanceName || !config.apiKey || !config.businessPhone) {
+      console.error("Configurações incompletas para envio do pedido:", config);
+      throw new Error("Configurações da API incompletas. Verifique as configurações em /admin/settings.");
+    }
+    
+    console.log("Enviando pedido para o número:", config.businessPhone);
     
     const message: EvolutionAPIMessage = {
       number: config.businessPhone,
