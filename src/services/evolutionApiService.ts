@@ -21,27 +21,52 @@ export const sendWhatsAppMessage = async (
   try {
     const config = getEvolutionApiConfig();
     
+    // Validar configurações antes de tentar enviar
+    if (!config.apiUrl || !config.instanceName || !config.apiKey || !config.businessPhone) {
+      console.error("Configurações da Evolution API incompletas");
+      throw new Error("Configurações incompletas. Verifique as configurações da API.");
+    }
+    
+    // Certifique-se de que a URL da API termina com uma barra se necessário
+    const apiUrl = config.apiUrl.endsWith('/') ? config.apiUrl : `${config.apiUrl}/`;
+    
+    console.log("Enviando mensagem para WhatsApp:", {
+      url: `${apiUrl}message/sendText/${config.instanceName}`,
+      message: { ...message, text: message.message } // Evolution API pode esperar "text" em vez de "message"
+    });
+
     const response = await fetch(
-      `${config.apiUrl}/message/sendText/${config.instanceName}`,
+      `${apiUrl}message/sendText/${config.instanceName}`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           apikey: config.apiKey,
         },
-        body: JSON.stringify(message),
+        body: JSON.stringify({
+          number: message.number,
+          // A API pode esperar o campo "text" em vez de "message"
+          text: message.message,
+          options: {
+            delay: 1200,
+            presence: "composing"
+          }
+        }),
       }
     );
 
     if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
+      const errorText = await response.text();
+      console.error("Erro na resposta da API:", errorText);
+      throw new Error(`Erro: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log("Resposta da Evolution API:", data);
     return data;
   } catch (error) {
-    console.error("Error sending WhatsApp message:", error);
-    return null;
+    console.error("Erro ao enviar mensagem WhatsApp:", error);
+    throw error; // Propagar o erro para ser tratado no componente
   }
 };
 
@@ -79,14 +104,20 @@ const getPaymentMethodText = (method: 'cash' | 'card' | 'pix'): string => {
 export const sendOrderToWhatsApp = async (
   order: Order
 ): Promise<boolean> => {
-  const formattedMessage = formatOrderForWhatsApp(order);
-  const config = getEvolutionApiConfig();
-  
-  const message: EvolutionAPIMessage = {
-    number: config.businessPhone,
-    message: formattedMessage,
-  };
-  
-  const response = await sendWhatsAppMessage(message);
-  return response !== null;
+  try {
+    const formattedMessage = formatOrderForWhatsApp(order);
+    const config = getEvolutionApiConfig();
+    
+    const message: EvolutionAPIMessage = {
+      number: config.businessPhone,
+      message: formattedMessage,
+    };
+    
+    const response = await sendWhatsAppMessage(message);
+    console.log("Pedido enviado com sucesso:", response);
+    return true;
+  } catch (error) {
+    console.error("Erro ao enviar pedido:", error);
+    throw error; // Propagar o erro para ser tratado no componente
+  }
 };

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -20,6 +21,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/components/ui/use-toast';
 import { sendOrderToWhatsApp } from '@/services/evolutionApiService';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 const formSchema = z.object({
   name: z.string().min(3, { message: 'Nome é obrigatório' }),
@@ -38,6 +41,7 @@ type FormValues = z.infer<typeof formSchema>;
 const CheckoutPage = () => {
   const { items, totalPrice, clearCart } = useCart();
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -65,6 +69,7 @@ const CheckoutPage = () => {
     }
 
     setIsLoading(true);
+    setErrorMessage(null);
     
     // Create the order object
     const order = {
@@ -79,21 +84,18 @@ const CheckoutPage = () => {
     
     try {
       // Send the order to WhatsApp
-      const success = await sendOrderToWhatsApp(order);
+      await sendOrderToWhatsApp(order);
       
-      if (success) {
-        // Clear the cart and show success message
-        clearCart();
-        toast({
-          title: "Pedido realizado com sucesso!",
-          description: "Recebemos seu pedido e entraremos em contato em breve.",
-        });
-        navigate('/order-confirmation');
-      } else {
-        throw new Error('Falha ao enviar pedido.');
-      }
+      // Clear the cart and show success message
+      clearCart();
+      toast({
+        title: "Pedido realizado com sucesso!",
+        description: "Recebemos seu pedido e entraremos em contato em breve.",
+      });
+      navigate('/order-confirmation');
     } catch (error) {
       console.error('Error submitting order:', error);
+      setErrorMessage("Ocorreu um erro ao processar seu pedido. Verifique as configurações da API ou tente novamente mais tarde.");
       toast({
         title: "Erro ao processar pedido",
         description: "Ocorreu um erro ao processar seu pedido. Por favor, tente novamente.",
@@ -115,6 +117,16 @@ const CheckoutPage = () => {
       
       <div className="container mx-auto px-4 py-8 flex-grow">
         <h1 className="text-2xl font-bold mb-6">Finalizar Pedido</h1>
+        
+        {errorMessage && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Erro ao processar pedido</AlertTitle>
+            <AlertDescription>
+              {errorMessage}
+            </AlertDescription>
+          </Alert>
+        )}
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="col-span-2">
