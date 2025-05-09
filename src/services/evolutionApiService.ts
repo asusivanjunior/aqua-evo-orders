@@ -15,6 +15,59 @@ const getEvolutionApiConfig = () => {
   };
 };
 
+// Normaliza a URL da API removendo barras finais extras
+const normalizeApiUrl = (url: string): string => {
+  let normalizedUrl = url;
+  while (normalizedUrl.endsWith('/')) {
+    normalizedUrl = normalizedUrl.slice(0, -1);
+  }
+  return normalizedUrl;
+};
+
+// Função para testar a conexão com a Evolution API
+export const testEvolutionApiConnection = async (
+  config: { apiUrl: string; instanceName: string; apiKey: string }
+): Promise<boolean> => {
+  try {
+    if (!config.apiUrl || !config.instanceName || !config.apiKey) {
+      throw new Error("Configurações incompletas. Por favor, preencha todos os campos.");
+    }
+    
+    // Normalizar a URL da API
+    const apiUrl = normalizeApiUrl(config.apiUrl);
+    
+    // Construir a URL para verificação do status da instância
+    const endpoint = `${apiUrl}/instance/connectionState/${config.instanceName}`;
+    
+    console.log("Testando conexão com Evolution API:", endpoint);
+    
+    const response = await fetch(endpoint, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": config.apiKey,
+      },
+    });
+    
+    console.log("Status da resposta de teste:", response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Erro na resposta do teste:", response.status, errorText);
+      throw new Error(`Erro ${response.status}: ${errorText || 'Sem detalhes do erro'}`);
+    }
+    
+    const data = await response.json();
+    console.log("Resposta do teste de conexão:", data);
+    
+    // Se chegou até aqui, a conexão foi bem-sucedida
+    return true;
+  } catch (error) {
+    console.error("Erro ao testar conexão:", error);
+    throw error;
+  }
+};
+
 export const sendWhatsAppMessage = async (
   message: EvolutionAPIMessage
 ): Promise<EvolutionAPIResponse | null> => {
@@ -27,11 +80,8 @@ export const sendWhatsAppMessage = async (
       throw new Error("Configurações incompletas. Verifique as configurações da API.");
     }
     
-    // Normalizar a URL da API removendo barras finais extras
-    let apiUrl = config.apiUrl;
-    while (apiUrl.endsWith('/')) {
-      apiUrl = apiUrl.slice(0, -1);
-    }
+    // Usar a função de normalização da URL
+    const apiUrl = normalizeApiUrl(config.apiUrl);
     
     // Construir o URL da API de forma mais robusta
     const endpoint = `${apiUrl}/message/sendText/${config.instanceName}`;
