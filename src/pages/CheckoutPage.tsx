@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -19,7 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { getDeliveryFees, getDeliveryFeeByNeighborhood, sendOrderToWhatsApp } from '@/services/evolutionApiService';
@@ -52,7 +51,9 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     // Carregar taxas de entrega
-    setDeliveryFees(getDeliveryFees());
+    const fees = getDeliveryFees();
+    console.log("Taxas de entrega carregadas:", fees);
+    setDeliveryFees(fees);
   }, []);
 
   // Configure the form with default values and validation
@@ -70,7 +71,9 @@ const CheckoutPage = () => {
 
   // Atualizar a taxa de entrega quando o bairro for alterado
   const onNeighborhoodChange = (neighborhood: string) => {
+    console.log("Bairro selecionado:", neighborhood);
     const fee = getDeliveryFeeByNeighborhood(neighborhood);
+    console.log("Taxa de entrega encontrada:", fee);
     setSelectedDeliveryFee(fee);
   };
 
@@ -136,6 +139,8 @@ const CheckoutPage = () => {
 
   // Calcular o total com a taxa de entrega
   const totalWithDelivery = totalPrice + (selectedDeliveryFee ?? 0);
+
+  console.log("Rendering checkout page with delivery fees:", deliveryFees);
 
   return (
     <div className="min-h-screen flex flex-col">

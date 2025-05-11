@@ -1,4 +1,3 @@
-
 import { DeliveryFee, EvolutionAPIMessage, EvolutionAPIResponse, Order } from "@/types";
 
 // Função para formatar o pedido para envio via WhatsApp
@@ -78,10 +77,13 @@ export const addDeliveryFee = (fee: DeliveryFee): void => {
   
   if (existingIndex >= 0) {
     // Atualizar taxa existente
-    fees[existingIndex] = fee;
+    fees[existingIndex] = { ...fee, id: fees[existingIndex].id };
   } else {
-    // Adicionar nova taxa
-    fees.push(fee);
+    // Adicionar nova taxa com ID único
+    fees.push({
+      ...fee,
+      id: fee.id || Date.now().toString()
+    });
   }
   
   saveDeliveryFees(fees);

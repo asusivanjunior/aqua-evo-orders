@@ -42,21 +42,29 @@ const AdminDeliveryFees = () => {
     },
   });
 
-  // Carregar taxas de entrega ao iniciar
+  // Carregar taxas de entrega ao iniciar e manter a interface atualizada
   useEffect(() => {
-    setDeliveryFees(getDeliveryFees());
+    loadDeliveryFees();
   }, []);
+
+  const loadDeliveryFees = () => {
+    const fees = getDeliveryFees();
+    console.log("Taxas de entrega carregadas (admin):", fees);
+    setDeliveryFees(fees);
+  };
 
   const onSubmit = (data: DeliveryFeeFormValues) => {
     try {
+      setIsAdding(true);
       const newFee: DeliveryFee = {
         id: Date.now().toString(), // ID simples baseado no timestamp atual
         neighborhood: data.neighborhood,
         fee: data.fee,
       };
       
+      console.log("Adicionando nova taxa:", newFee);
       addDeliveryFee(newFee);
-      setDeliveryFees(getDeliveryFees()); // Atualiza a lista
+      loadDeliveryFees(); // Atualiza a lista após adicionar
       
       form.reset({
         neighborhood: '',
@@ -68,24 +76,29 @@ const AdminDeliveryFees = () => {
         description: `Taxa para o bairro ${data.neighborhood} foi salva com sucesso.`,
       });
     } catch (error) {
+      console.error("Erro ao adicionar taxa:", error);
       toast({
         title: "Erro ao salvar taxa",
         description: "Ocorreu um erro ao salvar a taxa de entrega.",
         variant: "destructive",
       });
+    } finally {
+      setIsAdding(false);
     }
   };
 
   const handleDelete = (id: string, neighborhood: string) => {
     try {
+      console.log("Removendo taxa de ID:", id);
       removeDeliveryFee(id);
-      setDeliveryFees(getDeliveryFees()); // Atualiza a lista
+      loadDeliveryFees(); // Atualiza a lista após remover
       
       toast({
         title: "Taxa de entrega removida",
         description: `Taxa para o bairro ${neighborhood} foi removida com sucesso.`,
       });
     } catch (error) {
+      console.error("Erro ao remover taxa:", error);
       toast({
         title: "Erro ao remover taxa",
         description: "Ocorreu um erro ao remover a taxa de entrega.",
