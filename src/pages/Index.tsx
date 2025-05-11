@@ -4,38 +4,39 @@ import { Droplets, Flame, ArrowRight, ShoppingBag, Clock, ThumbsUp, Settings } f
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Header from '@/components/Header';
-import { products } from '@/data/products';
-import ProductCard from '@/components/ProductCard';
+import { useAdminAuth } from '@/contexts/AdminAuthContext';
 
 const Index = () => {
-  const waterProducts = products.filter(product => product.type === 'water').slice(0, 2);
-  const gasProducts = products.filter(product => product.type === 'gas').slice(0, 2);
+  const { isAdminAuthenticated } = useAdminAuth();
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col min-h-screen">
       <Header />
       
       {/* Hero Section */}
-      <section className="relative py-20 bg-gradient-to-br from-water to-water-dark text-white">
+      <section className="relative py-16 md:py-24 bg-gradient-to-br from-water to-water-dark text-white overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/water-gas.png')] bg-cover bg-center opacity-20"></div>
+        
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Entrega de Água e Gás direto na sua casa
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+              Água e Gás direto na sua casa
             </h1>
-            <p className="text-lg mb-8 text-white/90">
-              Receba água mineral refrescante e gás de cozinha com rapidez e segurança. Faça seu pedido em poucos cliques.
+            <p className="text-lg md:text-xl opacity-90 mb-8">
+              Entrega rápida, segura e com os melhores preços do mercado.
+              Faça seu pedido online e receba em minutos.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Button asChild size="lg" className="bg-white text-water-dark hover:bg-white/90">
+              <Button asChild size="lg" className="bg-white text-water hover:bg-gray-100">
                 <Link to="/products/water">
-                  <Droplets className="mr-2 h-5 w-5" />
-                  Comprar Água
+                  <Droplets className="mr-2 h-4 w-4" />
+                  Pedir Água
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10">
+              <Button asChild size="lg" className="bg-gas text-white hover:bg-gas-dark">
                 <Link to="/products/gas">
-                  <Flame className="mr-2 h-5 w-5" />
-                  Comprar Gás
+                  <Flame className="mr-2 h-4 w-4" />
+                  Pedir Gás
                 </Link>
               </Button>
             </div>
@@ -43,7 +44,7 @@ const Index = () => {
             {/* Botão de Administração */}
             <div className="mt-4">
               <Button asChild variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10">
-                <Link to="/admin/settings">
+                <Link to={isAdminAuthenticated ? "/admin/settings" : "/admin/login"}>
                   <Settings className="mr-2 h-4 w-4" />
                   Área Administrativa
                 </Link>
@@ -52,145 +53,87 @@ const Index = () => {
           </div>
         </div>
       </section>
-
-      {/* Features Section */}
-      <section className="py-20 bg-slate-50">
+      
+      {/* Nossos Benefícios */}
+      <section className="py-12 md:py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Como funciona</h2>
-          
+          <h2 className="text-3xl font-bold text-center mb-8">Nossos Benefícios</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="rounded-full bg-water/10 p-3 w-12 h-12 flex items-center justify-center mb-4">
-                  <ShoppingBag className="h-6 w-6 text-water" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Escolha seu produto</h3>
-                <p className="text-gray-600">
-                  Selecione entre nossa variedade de água mineral e botijões de gás nos diversos tamanhos disponíveis.
-                </p>
+            {/* Entrega Rápida */}
+            <Card className="shadow-md">
+              <CardContent className="p-6 flex flex-col items-center text-center">
+                <Clock className="h-10 w-10 text-water mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Entrega Rápida</h3>
+                <p className="text-gray-600">Receba seu pedido em tempo recorde, sem sair de casa.</p>
               </CardContent>
             </Card>
             
-            <Card>
-              <CardContent className="pt-6">
-                <div className="rounded-full bg-water/10 p-3 w-12 h-12 flex items-center justify-center mb-4">
-                  <Clock className="h-6 w-6 text-water" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Entrega rápida</h3>
-                <p className="text-gray-600">
-                  Receba seu pedido no mesmo dia, com nossa entrega expressa para toda a cidade.
-                </p>
+            {/* Produtos de Qualidade */}
+            <Card className="shadow-md">
+              <CardContent className="p-6 flex flex-col items-center text-center">
+                <ThumbsUp className="h-10 w-10 text-water mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Produtos de Qualidade</h3>
+                <p className="text-gray-600">Trabalhamos apenas com marcas de confiança e produtos certificados.</p>
               </CardContent>
             </Card>
             
-            <Card>
-              <CardContent className="pt-6">
-                <div className="rounded-full bg-water/10 p-3 w-12 h-12 flex items-center justify-center mb-4">
-                  <ThumbsUp className="h-6 w-6 text-water" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Qualidade garantida</h3>
-                <p className="text-gray-600">
-                  Trabalhamos apenas com as melhores marcas do mercado, garantindo sua segurança e satisfação.
-                </p>
+            {/* Compra Facilitada */}
+            <Card className="shadow-md">
+              <CardContent className="p-6 flex flex-col items-center text-center">
+                <ShoppingBag className="h-10 w-10 text-water mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Compra Facilitada</h3>
+                <p className="text-gray-600">Peça online de forma rápida e segura, com diversas opções de pagamento.</p>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+      
+      {/* Features Section */}
+      <section className="py-12 md:py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            {/* Feature Image */}
+            <div>
+              <img 
+                src="/feature-agua-gas.png"
+                alt="Água e Gás"
+                className="rounded-lg shadow-lg"
+              />
+            </div>
+            
+            {/* Feature Description */}
+            <div>
+              <h2 className="text-3xl font-bold mb-4">
+                A melhor solução para sua casa
+              </h2>
+              <p className="text-gray-700 text-lg mb-6">
+                Comodidade, segurança e economia em um só lugar.
+                Tenha água e gás de qualidade sempre à disposição,
+                com a facilidade que você merece.
+              </p>
+              <ul className="space-y-2">
+                <li className="flex items-center gap-2">
+                  <ArrowRight className="text-water h-5 w-5" />
+                  Entrega programada
+                </li>
+                <li className="flex items-center gap-2">
+                  <ArrowRight className="text-water h-5 w-5" />
+                  Pagamento facilitado
+                </li>
+                <li className="flex items-center gap-2">
+                  <ArrowRight className="text-water h-5 w-5" />
+                  Atendimento personalizado
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Products Showcase */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold mb-8">Água Mineral</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {waterProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-              <div className="flex items-center justify-center">
-                <Button asChild variant="ghost" className="w-full h-full">
-                  <Link to="/products/water" className="flex flex-col items-center justify-center gap-4 p-8">
-                    <ArrowRight className="h-12 w-12 text-water" />
-                    <span className="text-lg font-medium">Ver todos</span>
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-          
-          <div>
-            <h2 className="text-3xl font-bold mb-8">Gás de Cozinha</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {gasProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-              <div className="flex items-center justify-center">
-                <Button asChild variant="ghost" className="w-full h-full">
-                  <Link to="/products/gas" className="flex flex-col items-center justify-center gap-4 p-8">
-                    <ArrowRight className="h-12 w-12 text-gas" />
-                    <span className="text-lg font-medium">Ver todos</span>
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* CTA Section */}
-      <section className="py-20 bg-slate-900 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6">Pronto para fazer seu pedido?</h2>
-          <p className="text-lg mb-8 max-w-2xl mx-auto text-gray-300">
-            Entregamos água e gás de qualidade diretamente na sua porta com rapidez e segurança.
-          </p>
-          <Button asChild size="lg" className="bg-water hover:bg-water-dark">
-            <Link to="/products/water">Fazer Pedido Agora</Link>
-          </Button>
-        </div>
-      </section>
-      
-      {/* Footer */}
-      <footer className="bg-gray-100 py-12">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between">
-            <div className="mb-8 md:mb-0">
-              <h3 className="text-lg font-bold mb-4">Águas & Gás</h3>
-              <p className="text-gray-600 max-w-xs">
-                Entrega de água mineral e gás de cozinha com qualidade e rapidez.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-              <div>
-                <h4 className="font-semibold mb-3">Produtos</h4>
-                <ul className="space-y-2">
-                  <li><Link to="/products/water" className="text-gray-600 hover:text-water">Água Mineral</Link></li>
-                  <li><Link to="/products/gas" className="text-gray-600 hover:text-water">Gás de Cozinha</Link></li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold mb-3">Empresa</h4>
-                <ul className="space-y-2">
-                  <li><Link to="/about" className="text-gray-600 hover:text-water">Sobre Nós</Link></li>
-                  <li><Link to="/contact" className="text-gray-600 hover:text-water">Contato</Link></li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold mb-3">Contato</h4>
-                <ul className="space-y-2 text-gray-600">
-                  <li>(XX) XXXXX-XXXX</li>
-                  <li>contato@aguasegasdelivery.com</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-200 mt-12 pt-8 text-center text-gray-500 text-sm">
-            <p>© {new Date().getFullYear()} Águas & Gás Delivery. Todos os direitos reservados.</p>
-          </div>
+      <footer className="bg-gray-100 py-8">
+        <div className="container mx-auto px-4 text-center text-gray-500 text-sm">
+          <p>© {new Date().getFullYear()} Águas & Gás Delivery. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>

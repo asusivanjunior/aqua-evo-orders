@@ -3,8 +3,10 @@ import React, { useState } from 'react';
 import { ShoppingCart, Settings, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
+import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import AdminLogoutButton from '@/components/AdminLogoutButton';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +16,7 @@ import {
 
 const Header = () => {
   const { totalItems } = useCart();
+  const { isAdminAuthenticated } = useAdminAuth();
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
 
   return (
@@ -52,17 +55,17 @@ const Header = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem asChild>
-                <Link to="/admin/settings" className="flex w-full cursor-pointer">
+                <Link to={isAdminAuthenticated ? "/admin/settings" : "/admin/login"} className="flex w-full cursor-pointer">
                   Configurações
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/admin/products" className="flex w-full cursor-pointer">
+                <Link to={isAdminAuthenticated ? "/admin/products" : "/admin/login"} className="flex w-full cursor-pointer">
                   Gerenciar Produtos
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/admin/delivery-fees" className="flex w-full cursor-pointer">
+                <Link to={isAdminAuthenticated ? "/admin/delivery-fees" : "/admin/login"} className="flex w-full cursor-pointer">
                   Taxas de Entrega
                 </Link>
               </DropdownMenuItem>
@@ -71,6 +74,11 @@ const Header = () => {
         </nav>
         
         <div className="flex items-center space-x-4">
+          {/* Botão de Logout Admin (apenas quando logado) */}
+          {isAdminAuthenticated && (
+            <AdminLogoutButton />
+          )}
+          
           {/* Menu de Administração Mobile */}
           <div className="md:hidden">
             <DropdownMenu>
@@ -81,17 +89,17 @@ const Header = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
-                  <Link to="/admin/settings" className="flex w-full cursor-pointer">
+                  <Link to={isAdminAuthenticated ? "/admin/settings" : "/admin/login"} className="flex w-full cursor-pointer">
                     Configurações
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/admin/products" className="flex w-full cursor-pointer">
+                  <Link to={isAdminAuthenticated ? "/admin/products" : "/admin/login"} className="flex w-full cursor-pointer">
                     Gerenciar Produtos
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/admin/delivery-fees" className="flex w-full cursor-pointer">
+                  <Link to={isAdminAuthenticated ? "/admin/delivery-fees" : "/admin/login"} className="flex w-full cursor-pointer">
                     Taxas de Entrega
                   </Link>
                 </DropdownMenuItem>
