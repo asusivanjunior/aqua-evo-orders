@@ -24,6 +24,7 @@ import { AlertCircle } from 'lucide-react';
 import { getDeliveryFees, getDeliveryFeeByNeighborhood, sendOrderToWhatsApp } from '@/services/evolutionApiService';
 import { DeliveryFee } from '@/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { format } from "date-fns";
 
 const formSchema = z.object({
   name: z.string().min(3, { message: 'Nome é obrigatório' }),
@@ -91,6 +92,11 @@ const CheckoutPage = () => {
     setIsLoading(true);
     setErrorMessage(null);
     
+    // Criar o objeto do pedido com data/hora atual
+    const now = new Date();
+    const formattedDate = format(now, "dd/MM/yyyy");
+    const formattedTime = format(now, "HH:mm");
+    
     // Create the order object
     const order = {
       items,
@@ -102,14 +108,16 @@ const CheckoutPage = () => {
       observations: data.observations,
       total: totalPrice,
       deliveryFee: selectedDeliveryFee !== null ? selectedDeliveryFee : undefined,
+      orderDate: formattedDate,
+      orderTime: formattedTime
     };
     
     try {
       console.log("Iniciando processamento do pedido:", order);
-      // Send the order to WhatsApp
+      // Enviar o pedido para o WhatsApp
       await sendOrderToWhatsApp(order);
       
-      // Clear the cart and show success message
+      // Limpar o carrinho e mostrar mensagem de sucesso
       clearCart();
       toast({
         title: "Pedido realizado com sucesso!",
@@ -329,6 +337,9 @@ const CheckoutPage = () => {
             <Card>
               <CardContent className="p-6">
                 <h2 className="text-lg font-semibold mb-4">Resumo do Pedido</h2>
+                <p className="text-sm text-gray-500 mb-4">
+                  {format(new Date(), "dd/MM/yyyy")} às {format(new Date(), "HH:mm")}
+                </p>
                 
                 <div className="space-y-4">
                   {items.map((item, index) => {
@@ -346,7 +357,7 @@ const CheckoutPage = () => {
                   })}
                   
                   {/* Subtotal */}
-                  <div className="flex justify-between pt-2">
+                  <div className="flex justify-between pt-2 border-t">
                     <span className="text-gray-600">Subtotal</span>
                     <span>R$ {totalPrice.toFixed(2)}</span>
                   </div>

@@ -1,9 +1,17 @@
 import { DeliveryFee, EvolutionAPIMessage, EvolutionAPIResponse, Order } from "@/types";
+import { format } from "date-fns";
 
 // Função para formatar o pedido para envio via WhatsApp
 export const formatOrderForWhatsApp = (order: Order): string => {
+  // Obter data e hora atual
+  const now = new Date();
+  const formattedDate = format(now, "dd/MM/yyyy");
+  const formattedTime = format(now, "HH:mm");
+  
   let message = "*NOVO PEDIDO*\n\n";
   
+  message += `*Data:* ${formattedDate}\n`;
+  message += `*Hora:* ${formattedTime}\n\n`;
   message += `*Cliente:* ${order.customerName}\n`;
   message += `*Telefone:* ${order.phone}\n`;
   message += `*Endereço:* ${order.address}\n`;
@@ -27,12 +35,15 @@ export const formatOrderForWhatsApp = (order: Order): string => {
     const deliveryFeeText = order.deliveryFee === 0 ? "Grátis" : `R$ ${order.deliveryFee.toFixed(2)}`;
     message += `\n*Taxa de Entrega:* ${deliveryFeeText}`;
     
-    // Adicionar total geral apenas se a taxa de entrega não for gratuita
-    if (order.deliveryFee > 0) {
-      const totalWithDelivery = order.total + order.deliveryFee;
-      message += `\n*Total Geral:* R$ ${totalWithDelivery.toFixed(2)}`;
-    }
+    // Adicionar total geral
+    const totalWithDelivery = order.total + order.deliveryFee;
+    message += `\n*Total Geral:* R$ ${totalWithDelivery.toFixed(2)}`;
+  } else {
+    // Se não tiver taxa de entrega, o total é igual ao subtotal
+    message += `\n*Total Geral:* R$ ${order.total.toFixed(2)}`;
   }
+  
+  message += `\n\n*Pedido realizado em:* ${formattedDate} às ${formattedTime}`;
   
   return message;
 };

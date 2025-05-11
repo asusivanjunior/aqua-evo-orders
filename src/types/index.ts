@@ -27,11 +27,13 @@ export type Order = {
   customerName: string;
   phone: string;
   address: string;
-  neighborhood?: string; // Novo campo opcional para bairro
+  neighborhood?: string;
   paymentMethod: 'cash' | 'card' | 'pix';
   observations?: string;
   total: number;
-  deliveryFee?: number; // Novo campo opcional para taxa de entrega
+  deliveryFee?: number;
+  orderDate?: string; // Data do pedido
+  orderTime?: string; // Hora do pedido
 };
 
 export type DeliveryFee = {
