@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { ShoppingCart, Settings, ChevronDown, Clock } from 'lucide-react';
+import { ShoppingCart, Settings, ChevronDown, Clock, BarChart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
@@ -57,6 +58,12 @@ const Header = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem asChild>
+                <Link to={isAdminAuthenticated ? "/crm" : "/admin/login"} className="flex w-full cursor-pointer items-center gap-2">
+                  <BarChart className="h-4 w-4" />
+                  CRM
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link to={isAdminAuthenticated ? "/admin/settings" : "/admin/login"} className="flex w-full cursor-pointer">
                   Configurações
                 </Link>
@@ -90,6 +97,12 @@ const Header = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link to={isAdminAuthenticated ? "/crm" : "/admin/login"} className="flex w-full cursor-pointer items-center gap-2">
+                    <BarChart className="h-4 w-4" />
+                    CRM
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to={isAdminAuthenticated ? "/admin/settings" : "/admin/login"} className="flex w-full cursor-pointer">
                     Configurações
