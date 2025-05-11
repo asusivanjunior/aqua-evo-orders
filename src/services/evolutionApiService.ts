@@ -1,132 +1,7 @@
 
 import { EvolutionAPIMessage, EvolutionAPIResponse, Order } from "@/types";
 
-// Get configuration from localStorage
-const getEvolutionApiConfig = () => {
-  const storedSettings = localStorage.getItem('evolutionApiSettings');
-  if (storedSettings) {
-    return JSON.parse(storedSettings);
-  }
-  return {
-    apiUrl: "https://your-evolution-api-url.com",
-    instanceName: "your-instance-name",
-    apiKey: "your-api-key",
-    businessPhone: "5511999999999",
-  };
-};
-
-// Normaliza a URL da API removendo barras finais extras
-const normalizeApiUrl = (url: string): string => {
-  let normalizedUrl = url;
-  while (normalizedUrl.endsWith('/')) {
-    normalizedUrl = normalizedUrl.slice(0, -1);
-  }
-  return normalizedUrl;
-};
-
-// Função para testar a conexão com a Evolution API
-export const testEvolutionApiConnection = async (
-  config: { apiUrl: string; instanceName: string; apiKey: string }
-): Promise<boolean> => {
-  try {
-    if (!config.apiUrl || !config.instanceName || !config.apiKey) {
-      throw new Error("Configurações incompletas. Por favor, preencha todos os campos.");
-    }
-    
-    // Normalizar a URL da API
-    const apiUrl = normalizeApiUrl(config.apiUrl);
-    
-    // Construir a URL para verificação do status da instância
-    const endpoint = `${apiUrl}/instance/connectionState/${config.instanceName}`;
-    
-    console.log("Testando conexão com Evolution API:", endpoint);
-    
-    const response = await fetch(endpoint, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "apikey": config.apiKey,
-      },
-    });
-    
-    console.log("Status da resposta de teste:", response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erro na resposta do teste:", response.status, errorText);
-      throw new Error(`Erro ${response.status}: ${errorText || 'Sem detalhes do erro'}`);
-    }
-    
-    const data = await response.json();
-    console.log("Resposta do teste de conexão:", data);
-    
-    // Se chegou até aqui, a conexão foi bem-sucedida
-    return true;
-  } catch (error) {
-    console.error("Erro ao testar conexão:", error);
-    throw error;
-  }
-};
-
-export const sendWhatsAppMessage = async (
-  message: EvolutionAPIMessage
-): Promise<EvolutionAPIResponse | null> => {
-  try {
-    const config = getEvolutionApiConfig();
-    
-    // Validar configurações antes de tentar enviar
-    if (!config.apiUrl || !config.instanceName || !config.apiKey || !config.businessPhone) {
-      console.error("Configurações da Evolution API incompletas", config);
-      throw new Error("Configurações incompletas. Verifique as configurações da API.");
-    }
-    
-    // Usar a função de normalização da URL
-    const apiUrl = normalizeApiUrl(config.apiUrl);
-    
-    // Construir o URL da API de forma mais robusta
-    const endpoint = `${apiUrl}/message/sendText/${config.instanceName}`;
-    
-    console.log("Enviando mensagem para WhatsApp:", {
-      endpoint,
-      instanceName: config.instanceName,
-      number: message.number,
-      messageLength: message.message.length
-    });
-
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: config.apiKey,
-      },
-      body: JSON.stringify({
-        number: message.number,
-        text: message.message,
-        options: {
-          delay: 1200,
-          presence: "composing"
-        }
-      }),
-    });
-
-    // Registro detalhado da resposta para ajudar no debug
-    console.log("Status da resposta:", response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erro na resposta da API:", response.status, errorText);
-      throw new Error(`Erro: ${response.status} - ${errorText || 'Sem detalhes do erro'}`);
-    }
-
-    const data = await response.json();
-    console.log("Resposta da Evolution API:", data);
-    return data;
-  } catch (error) {
-    console.error("Erro ao enviar mensagem WhatsApp:", error);
-    throw error; // Propagar o erro para ser tratado no componente
-  }
-};
-
+// Função para formatar o pedido para envio via WhatsApp
 export const formatOrderForWhatsApp = (order: Order): string => {
   let message = "*NOVO PEDIDO*\n\n";
   
@@ -158,31 +33,57 @@ const getPaymentMethodText = (method: 'cash' | 'card' | 'pix'): string => {
   }
 };
 
-export const sendOrderToWhatsApp = async (
-  order: Order
-): Promise<boolean> => {
+// Número fixo do estabelecimento
+const BUSINESS_WHATSAPP = "11914860970";
+
+export const testEvolutionApiConnection = async (): Promise<boolean> => {
+  // Como não estamos mais usando a Evolution API, simplesmente retornamos true
+  return true;
+};
+
+// Função para enviar pedido via WhatsApp usando a API Web do WhatsApp
+export const sendOrderToWhatsApp = async (order: Order): Promise<boolean> => {
   try {
     const formattedMessage = formatOrderForWhatsApp(order);
-    const config = getEvolutionApiConfig();
     
-    // Validar as configurações antes de usar
-    if (!config.apiUrl || !config.instanceName || !config.apiKey || !config.businessPhone) {
-      console.error("Configurações incompletas para envio do pedido:", config);
-      throw new Error("Configurações da API incompletas. Verifique as configurações em /admin/settings.");
-    }
+    // Preparar o link do WhatsApp
+    const encodedMessage = encodeURIComponent(formattedMessage);
+    const whatsappUrl = `https://wa.me/${BUSINESS_WHATSAPP}?text=${encodedMessage}`;
     
-    console.log("Enviando pedido para o número:", config.businessPhone);
+    console.log("Abrindo WhatsApp com URL:", whatsappUrl);
     
-    const message: EvolutionAPIMessage = {
-      number: config.businessPhone,
-      message: formattedMessage,
-    };
+    // Abrir o WhatsApp em uma nova janela
+    window.open(whatsappUrl, '_blank');
     
-    const response = await sendWhatsAppMessage(message);
-    console.log("Pedido enviado com sucesso:", response);
     return true;
   } catch (error) {
-    console.error("Erro ao enviar pedido:", error);
-    throw error; // Propagar o erro para ser tratado no componente
+    console.error("Erro ao enviar pedido para o WhatsApp:", error);
+    throw new Error("Não foi possível abrir o WhatsApp para enviar o pedido. Por favor, tente novamente.");
+  }
+};
+
+// Mantendo esta função apenas para compatibilidade com o código existente
+export const sendWhatsAppMessage = async (message: EvolutionAPIMessage): Promise<EvolutionAPIResponse | null> => {
+  try {
+    const encodedMessage = encodeURIComponent(message.message);
+    const whatsappUrl = `https://wa.me/${message.number}?text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, '_blank');
+    
+    // Retornando um objeto fictício apenas para manter a compatibilidade
+    return {
+      key: {
+        remoteJid: message.number,
+        fromMe: true,
+        id: new Date().toISOString()
+      },
+      message: {
+        conversation: message.message
+      },
+      status: "success"
+    };
+  } catch (error) {
+    console.error("Erro ao enviar mensagem para o WhatsApp:", error);
+    throw error;
   }
 };
