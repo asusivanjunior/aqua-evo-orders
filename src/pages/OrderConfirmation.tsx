@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { CheckCircle, ClockHistory } from 'lucide-react';
+import { CheckCircle, Clock } from 'lucide-react';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Order } from '@/types';
@@ -56,7 +56,7 @@ const OrderConfirmation = () => {
             
             <Button variant="outline" asChild className="flex gap-2 items-center">
               <Link to="/order-history">
-                <ClockHistory className="h-4 w-4" />
+                <Clock className="h-4 w-4" />
                 Ver Histórico de Pedidos
               </Link>
             </Button>

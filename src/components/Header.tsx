@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { ShoppingCart, Settings, ChevronDown, ClockHistory } from 'lucide-react';
+import { ShoppingCart, Settings, ChevronDown, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
@@ -43,7 +42,7 @@ const Header = () => {
             Gás
           </Link>
           <Link to="/order-history" className="text-sm font-medium hover:text-water transition-colors flex items-center gap-1">
-            <ClockHistory className="h-4 w-4" /> Meus Pedidos
+            <Clock className="h-4 w-4" /> Meus Pedidos
           </Link>
           <Link to="/about" className="text-sm font-medium hover:text-water transition-colors">
             Sobre
