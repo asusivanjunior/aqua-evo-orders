@@ -39,7 +39,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/components/ui/use-toast';
 import { type Customer, type Order } from '@/types';
 import { User, UserPlus, Search, Phone, Mail, MapPin, Calendar, MessageSquare } from 'lucide-react';
 
@@ -72,9 +72,8 @@ const CRM = () => {
       } catch (error) {
         console.error('Erro ao carregar clientes:', error);
         toast({
-          title: 'Erro',
-          description: 'Não foi possível carregar os clientes',
-          variant: 'destructive',
+          title: "Erro",
+          description: "Não foi possível carregar os clientes"
         });
       }
     };
@@ -165,15 +164,14 @@ const CRM = () => {
       form.reset();
       
       toast({
-        title: 'Cliente adicionado',
-        description: `${newCustomer.name} foi adicionado com sucesso.`,
+        title: "Cliente adicionado",
+        description: `${newCustomer.name} foi adicionado com sucesso.`
       });
     } catch (error) {
       console.error('Erro ao adicionar cliente:', error);
       toast({
-        title: 'Erro',
-        description: 'Não foi possível adicionar o cliente',
-        variant: 'destructive',
+        title: "Erro",
+        description: "Não foi possível adicionar o cliente"
       });
     }
   };
@@ -198,15 +196,14 @@ const CRM = () => {
       setSelectedCustomer(null);
       
       toast({
-        title: 'Cliente atualizado',
+        title: "Cliente atualizado",
         description: `As informações de ${data.name || selectedCustomer.name} foram atualizadas.`
       });
     } catch (error) {
       console.error('Erro ao atualizar cliente:', error);
       toast({
-        title: 'Erro',
-        description: 'Não foi possível atualizar o cliente',
-        variant: 'destructive',
+        title: "Erro",
+        description: "Não foi possível atualizar o cliente"
       });
     }
   };
