@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,7 +17,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, CheckCircle2, XCircle } from 'lucide-react';
+import { Settings, CheckCircle2, XCircle, TruckIcon } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { 
   testEvolutionApiConnection, 
@@ -129,6 +130,21 @@ const AdminSettings = () => {
         <div className="flex items-center gap-2 mb-6">
           <Settings size={24} />
           <h1 className="text-2xl font-bold">Configurações do Sistema</h1>
+        </div>
+        
+        {/* Navegação de Administração */}
+        <div className="mb-6 flex flex-wrap gap-4">
+          <Button variant="outline" asChild>
+            <Link to="/admin/products">
+              Gerenciar Produtos
+            </Link>
+          </Button>
+          <Button variant="outline" asChild className="flex items-center gap-2">
+            <Link to="/admin/delivery-fees">
+              <TruckIcon className="h-4 w-4" />
+              Gerenciar Taxas de Entrega
+            </Link>
+          </Button>
         </div>
         
         {testResult && (

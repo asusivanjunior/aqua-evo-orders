@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -19,9 +20,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/components/ui/use-toast';
-import { sendOrderToWhatsApp } from '@/services/evolutionApiService';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { getDeliveryFees, getDeliveryFeeByNeighborhood, sendOrderToWhatsApp } from '@/services/evolutionApiService';
+import { DeliveryFee } from '@/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
   name: z.string().min(3, { message: 'Nome é obrigatório' }),
@@ -29,6 +32,7 @@ const formSchema = z.object({
     .string()
     .min(10, { message: 'Telefone deve ter pelo menos 10 dígitos' }),
   address: z.string().min(5, { message: 'Endereço é obrigatório' }),
+  neighborhood: z.string().min(1, { message: 'Selecione um bairro' }),
   paymentMethod: z.enum(['cash', 'card', 'pix'], {
     required_error: 'Selecione uma forma de pagamento',
   }),
@@ -41,8 +45,15 @@ const CheckoutPage = () => {
   const { items, totalPrice, clearCart } = useCart();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [deliveryFees, setDeliveryFees] = useState<DeliveryFee[]>([]);
+  const [selectedDeliveryFee, setSelectedDeliveryFee] = useState<number | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Carregar taxas de entrega
+    setDeliveryFees(getDeliveryFees());
+  }, []);
 
   // Configure the form with default values and validation
   const form = useForm<FormValues>({
@@ -51,10 +62,17 @@ const CheckoutPage = () => {
       name: '',
       phone: '',
       address: '',
+      neighborhood: '',
       paymentMethod: 'cash',
       observations: '',
     },
   });
+
+  // Atualizar a taxa de entrega quando o bairro for alterado
+  const onNeighborhoodChange = (neighborhood: string) => {
+    const fee = getDeliveryFeeByNeighborhood(neighborhood);
+    setSelectedDeliveryFee(fee);
+  };
 
   const onSubmit = async (data: FormValues) => {
     if (items.length === 0) {
@@ -76,9 +94,11 @@ const CheckoutPage = () => {
       customerName: data.name,
       phone: data.phone,
       address: data.address,
+      neighborhood: data.neighborhood,
       paymentMethod: data.paymentMethod,
       observations: data.observations,
       total: totalPrice,
+      deliveryFee: selectedDeliveryFee !== null ? selectedDeliveryFee : undefined,
     };
     
     try {
@@ -113,6 +133,9 @@ const CheckoutPage = () => {
     navigate('/');
     return null;
   }
+
+  // Calcular o total com a taxa de entrega
+  const totalWithDelivery = totalPrice + (selectedDeliveryFee ?? 0);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -172,9 +195,49 @@ const CheckoutPage = () => {
                         <FormItem>
                           <FormLabel>Endereço completo</FormLabel>
                           <FormControl>
-                            <Input placeholder="Rua, número, bairro, complemento" {...field} />
+                            <Input placeholder="Rua, número, complemento" {...field} />
                           </FormControl>
                           <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="neighborhood"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Bairro</FormLabel>
+                          <Select 
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              onNeighborhoodChange(value);
+                            }}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione o bairro" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {deliveryFees.length === 0 ? (
+                                <SelectItem value="nenhum">Nenhum bairro cadastrado</SelectItem>
+                              ) : (
+                                deliveryFees.map((fee) => (
+                                  <SelectItem key={fee.id} value={fee.neighborhood}>
+                                    {fee.neighborhood} {fee.fee === 0 ? '(Entrega Grátis)' : `- R$ ${fee.fee.toFixed(2)}`}
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                          {deliveryFees.length === 0 && (
+                            <p className="text-sm text-amber-600 mt-1">
+                              Nenhum bairro cadastrado. Entre em contato com o estabelecimento.
+                            </p>
+                          )}
                         </FormItem>
                       )}
                     />
@@ -247,7 +310,7 @@ const CheckoutPage = () => {
                     <Button
                       type="submit"
                       className="w-full bg-water hover:bg-water-dark"
-                      disabled={isLoading}
+                      disabled={isLoading || deliveryFees.length === 0}
                     >
                       {isLoading ? "Processando..." : "Confirmar Pedido"}
                     </Button>
@@ -277,9 +340,36 @@ const CheckoutPage = () => {
                     );
                   })}
                   
+                  {/* Subtotal */}
+                  <div className="flex justify-between pt-2">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span>R$ {totalPrice.toFixed(2)}</span>
+                  </div>
+                  
+                  {/* Taxa de Entrega */}
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Taxa de Entrega</span>
+                    <span>
+                      {selectedDeliveryFee === null ? (
+                        "Selecione o bairro"
+                      ) : selectedDeliveryFee === 0 ? (
+                        <span className="text-green-600 font-semibold">Grátis</span>
+                      ) : (
+                        `R$ ${selectedDeliveryFee.toFixed(2)}`
+                      )}
+                    </span>
+                  </div>
+                  
+                  {/* Total */}
                   <div className="border-t pt-4 flex justify-between font-bold">
                     <span>Total</span>
-                    <span>R$ {totalPrice.toFixed(2)}</span>
+                    <span>
+                      {selectedDeliveryFee === null ? (
+                        `R$ ${totalPrice.toFixed(2)}`
+                      ) : (
+                        `R$ ${totalWithDelivery.toFixed(2)}`
+                      )}
+                    </span>
                   </div>
                 </div>
               </CardContent>

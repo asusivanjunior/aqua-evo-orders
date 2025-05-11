@@ -1,5 +1,5 @@
 
-import { EvolutionAPIMessage, EvolutionAPIResponse, Order } from "@/types";
+import { DeliveryFee, EvolutionAPIMessage, EvolutionAPIResponse, Order } from "@/types";
 
 // Função para formatar o pedido para envio via WhatsApp
 export const formatOrderForWhatsApp = (order: Order): string => {
@@ -8,6 +8,9 @@ export const formatOrderForWhatsApp = (order: Order): string => {
   message += `*Cliente:* ${order.customerName}\n`;
   message += `*Telefone:* ${order.phone}\n`;
   message += `*Endereço:* ${order.address}\n`;
+  if (order.neighborhood) {
+    message += `*Bairro:* ${order.neighborhood}\n`;
+  }
   message += `*Forma de Pagamento:* ${getPaymentMethodText(order.paymentMethod)}\n\n`;
   
   message += "*Itens do Pedido:*\n";
@@ -19,7 +22,18 @@ export const formatOrderForWhatsApp = (order: Order): string => {
     message += `\n*Observações:* ${order.observations}\n`;
   }
   
-  message += `\n*Total:* R$ ${order.total.toFixed(2)}`;
+  message += `\n*Subtotal:* R$ ${order.total.toFixed(2)}`;
+  
+  if (order.deliveryFee !== undefined) {
+    const deliveryFeeText = order.deliveryFee === 0 ? "Grátis" : `R$ ${order.deliveryFee.toFixed(2)}`;
+    message += `\n*Taxa de Entrega:* ${deliveryFeeText}`;
+    
+    // Adicionar total geral apenas se a taxa de entrega não for gratuita
+    if (order.deliveryFee > 0) {
+      const totalWithDelivery = order.total + order.deliveryFee;
+      message += `\n*Total Geral:* R$ ${totalWithDelivery.toFixed(2)}`;
+    }
+  }
   
   return message;
 };
@@ -45,6 +59,44 @@ export const getBusinessWhatsAppNumber = (): string => {
 // Função para salvar o número do WhatsApp do estabelecimento
 export const saveBusinessWhatsAppNumber = (number: string): void => {
   localStorage.setItem('businessWhatsAppNumber', number);
+};
+
+// Funções para gerenciar taxas de entrega
+export const getDeliveryFees = (): DeliveryFee[] => {
+  const savedFees = localStorage.getItem('deliveryFees');
+  return savedFees ? JSON.parse(savedFees) : [];
+};
+
+export const saveDeliveryFees = (fees: DeliveryFee[]): void => {
+  localStorage.setItem('deliveryFees', JSON.stringify(fees));
+};
+
+export const addDeliveryFee = (fee: DeliveryFee): void => {
+  const fees = getDeliveryFees();
+  // Verificar se o bairro já existe
+  const existingIndex = fees.findIndex(f => f.neighborhood.toLowerCase() === fee.neighborhood.toLowerCase());
+  
+  if (existingIndex >= 0) {
+    // Atualizar taxa existente
+    fees[existingIndex] = fee;
+  } else {
+    // Adicionar nova taxa
+    fees.push(fee);
+  }
+  
+  saveDeliveryFees(fees);
+};
+
+export const removeDeliveryFee = (id: string): void => {
+  const fees = getDeliveryFees();
+  const updatedFees = fees.filter(fee => fee.id !== id);
+  saveDeliveryFees(updatedFees);
+};
+
+export const getDeliveryFeeByNeighborhood = (neighborhood: string): number | null => {
+  const fees = getDeliveryFees();
+  const fee = fees.find(f => f.neighborhood.toLowerCase() === neighborhood.toLowerCase());
+  return fee ? fee.fee : null;
 };
 
 export const testEvolutionApiConnection = async (): Promise<boolean> => {

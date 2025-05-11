@@ -27,9 +27,17 @@ export type Order = {
   customerName: string;
   phone: string;
   address: string;
+  neighborhood?: string; // Novo campo opcional para bairro
   paymentMethod: 'cash' | 'card' | 'pix';
   observations?: string;
   total: number;
+  deliveryFee?: number; // Novo campo opcional para taxa de entrega
+};
+
+export type DeliveryFee = {
+  id: string;
+  neighborhood: string;
+  fee: number; // 0 para entrega gratuita
 };
 
 export type EvolutionAPIMessage = {

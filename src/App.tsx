@@ -14,6 +14,7 @@ import CheckoutPage from "./pages/CheckoutPage";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import AdminSettings from "./pages/AdminSettings";
 import AdminProducts from "./pages/AdminProducts";
+import AdminDeliveryFees from "./pages/AdminDeliveryFees";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/order-confirmation" element={<OrderConfirmation />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
             <Route path="/admin/products" element={<AdminProducts />} />
+            <Route path="/admin/delivery-fees" element={<AdminDeliveryFees />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
