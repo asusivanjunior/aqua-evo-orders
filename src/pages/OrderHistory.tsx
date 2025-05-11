@@ -28,16 +28,23 @@ const OrderHistory = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Simular carregamento do histórico de pedidos
+  // Carregar histórico de pedidos
   useEffect(() => {
-    // Em um ambiente real, isso seria uma requisição a uma API/banco de dados
     const loadOrders = () => {
-      // Buscar do localStorage como exemplo
-      const savedOrders = localStorage.getItem('orderHistory');
-      if (savedOrders) {
-        setOrders(JSON.parse(savedOrders));
+      try {
+        const savedOrders = localStorage.getItem('orderHistory');
+        console.log('Pedidos salvos no localStorage:', savedOrders);
+        
+        if (savedOrders) {
+          const parsedOrders = JSON.parse(savedOrders);
+          console.log('Pedidos parseados:', parsedOrders);
+          setOrders(parsedOrders);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar pedidos do localStorage:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     // Simulando tempo de carregamento
@@ -63,7 +70,7 @@ const OrderHistory = () => {
             <div className="w-16 h-16 border-4 border-gray-200 border-t-water rounded-full animate-spin mb-4"></div>
             <p className="text-gray-500">Carregando seus pedidos...</p>
           </div>
-        ) : orders.length > 0 ? (
+        ) : orders && orders.length > 0 ? (
           <div className="space-y-6">
             {orders.map((order, index) => (
               <Card key={index} className="overflow-hidden transition-all hover:shadow-md">
@@ -73,7 +80,7 @@ const OrderHistory = () => {
                       <CardTitle className="text-lg">Pedido #{index + 1}</CardTitle>
                       <CardDescription className="flex items-center gap-1 mt-1">
                         <Clock className="h-4 w-4" /> 
-                        {order.orderDate} às {order.orderTime}
+                        {order.orderDate || 'Data não disponível'} às {order.orderTime || 'Hora não disponível'}
                       </CardDescription>
                     </div>
                     <div className="text-right">
@@ -97,16 +104,23 @@ const OrderHistory = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {order.items.map((item, itemIndex) => (
-                            <TableRow key={itemIndex}>
-                              <TableCell>{item.product.name}</TableCell>
-                              <TableCell>{item.selectedSize.name}</TableCell>
-                              <TableCell>{item.quantity}</TableCell>
-                              <TableCell className="text-right">{formatCurrency(
-                                (item.product.price + item.selectedSize.additionalPrice) * item.quantity
-                              )}</TableCell>
-                            </TableRow>
-                          ))}
+                          {order.items && order.items.map((item, itemIndex) => {
+                            const productName = item.product ? item.product.name : 'Produto não disponível';
+                            const sizeName = item.selectedSize ? item.selectedSize.name : 'Tamanho não disponível';
+                            const quantity = item.quantity || 0;
+                            const price = item.product && item.selectedSize 
+                              ? (item.product.price + (item.selectedSize.additionalPrice || 0)) * quantity
+                              : 0;
+                            
+                            return (
+                              <TableRow key={itemIndex}>
+                                <TableCell>{productName}</TableCell>
+                                <TableCell>{sizeName}</TableCell>
+                                <TableCell>{quantity}</TableCell>
+                                <TableCell className="text-right">{formatCurrency(price)}</TableCell>
+                              </TableRow>
+                            );
+                          })}
                         </TableBody>
                       </Table>
                     </div>
@@ -114,9 +128,9 @@ const OrderHistory = () => {
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
                         <h3 className="font-medium mb-2">Dados de Entrega</h3>
-                        <p className="text-gray-700">{order.customerName}</p>
-                        <p className="text-gray-700">{order.phone}</p>
-                        <p className="text-gray-700">{order.address}</p>
+                        <p className="text-gray-700">{order.customerName || 'Nome não disponível'}</p>
+                        <p className="text-gray-700">{order.phone || 'Telefone não disponível'}</p>
+                        <p className="text-gray-700">{order.address || 'Endereço não disponível'}</p>
                         {order.neighborhood && (
                           <p className="text-gray-700">{order.neighborhood}</p>
                         )}
@@ -128,7 +142,7 @@ const OrderHistory = () => {
                           Forma de pagamento: {
                             order.paymentMethod === 'cash' ? 'Dinheiro' : 
                             order.paymentMethod === 'card' ? 'Cartão' : 
-                            'PIX'
+                            order.paymentMethod === 'pix' ? 'PIX' : 'Não especificada'
                           }
                         </p>
                         {order.deliveryFee !== undefined && (
@@ -147,7 +161,7 @@ const OrderHistory = () => {
                 
                 <CardFooter className="bg-gray-50 flex justify-between">
                   <Button variant="outline" asChild>
-                    <Link to={`/product/${order.items[0].product.id}`}>
+                    <Link to={order.items && order.items[0] && order.items[0].product ? `/product/${order.items[0].product.id}` : "/"}>
                       Pedir novamente
                     </Link>
                   </Button>

@@ -13,23 +13,38 @@ const OrderConfirmation = () => {
   // Salvar o pedido no histórico
   useEffect(() => {
     if (order) {
-      // Adicionar data e hora ao pedido
-      const now = new Date();
-      const orderWithTimestamp = {
-        ...order,
-        orderDate: now.toLocaleDateString('pt-BR'),
-        orderTime: now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-      };
-      
-      // Buscar histórico existente
-      const existingHistory = localStorage.getItem('orderHistory');
-      const orderHistory = existingHistory ? JSON.parse(existingHistory) : [];
-      
-      // Adicionar novo pedido ao histórico
-      orderHistory.push(orderWithTimestamp);
-      
-      // Salvar no localStorage
-      localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+      try {
+        // Verificar se o pedido já tem data e hora
+        const now = new Date();
+        const orderWithTimestamp = {
+          ...order,
+          orderDate: order.orderDate || now.toLocaleDateString('pt-BR'),
+          orderTime: order.orderTime || now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+        };
+        
+        // Garantir que selectedSize não tenha referência circular
+        const processedOrder = {
+          ...orderWithTimestamp,
+          items: orderWithTimestamp.items.map(item => ({
+            ...item,
+            product: { ...item.product },
+            selectedSize: { ...item.selectedSize }
+          }))
+        };
+        
+        // Buscar histórico existente
+        const existingHistory = localStorage.getItem('orderHistory');
+        const orderHistory = existingHistory ? JSON.parse(existingHistory) : [];
+        
+        // Adicionar novo pedido ao histórico
+        orderHistory.push(processedOrder);
+        
+        // Salvar no localStorage
+        localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+        console.log('Pedido salvo no histórico:', processedOrder);
+      } catch (error) {
+        console.error('Erro ao salvar o pedido no histórico:', error);
+      }
     }
   }, [order]);
 
