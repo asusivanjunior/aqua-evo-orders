@@ -58,3 +58,17 @@ export type EvolutionAPIResponse = {
   };
   status: string;
 };
+
+// Tipo para representar um cliente no sistema CRM
+export type Customer = {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  address: string;
+  neighborhood?: string;
+  totalOrders: number;
+  lastOrderDate?: string;
+  notes?: string;
+  createdAt: string;
+};
