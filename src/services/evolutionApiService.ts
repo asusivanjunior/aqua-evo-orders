@@ -37,8 +37,14 @@ const getPaymentMethodText = (method: 'cash' | 'card' | 'pix'): string => {
 const BUSINESS_WHATSAPP = "11914860970";
 
 export const testEvolutionApiConnection = async (): Promise<boolean> => {
-  // Como não estamos mais usando a Evolution API, simplesmente retornamos true
-  return true;
+  try {
+    // Como não estamos mais usando a Evolution API, simplesmente retornamos true
+    // Isso garante que o teste de conexão não falhe
+    return true;
+  } catch (error) {
+    console.error("Erro ao testar conexão:", error);
+    return false;
+  }
 };
 
 // Função para enviar pedido via WhatsApp usando a API Web do WhatsApp
