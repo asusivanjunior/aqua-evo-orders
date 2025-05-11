@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Droplets, Flame, ArrowRight, ShoppingBag, Clock, ThumbsUp } from 'lucide-react';
+import { Droplets, Flame, ArrowRight, ShoppingBag, Clock, ThumbsUp, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Header from '@/components/Header';
@@ -37,6 +36,16 @@ const Index = () => {
                 <Link to="/products/gas">
                   <Flame className="mr-2 h-5 w-5" />
                   Comprar Gás
+                </Link>
+              </Button>
+            </div>
+            
+            {/* Botão de Administração */}
+            <div className="mt-4">
+              <Button asChild variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10">
+                <Link to="/admin/settings">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Área Administrativa
                 </Link>
               </Button>
             </div>

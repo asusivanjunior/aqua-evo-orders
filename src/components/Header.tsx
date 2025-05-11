@@ -1,13 +1,20 @@
 
-import React from 'react';
-import { ShoppingCart } from 'lucide-react';
+import React, { useState } from 'react';
+import { ShoppingCart, Settings, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const Header = () => {
   const { totalItems } = useCart();
+  const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b shadow-sm">
@@ -35,9 +42,63 @@ const Header = () => {
           <Link to="/about" className="text-sm font-medium hover:text-water transition-colors">
             Sobre
           </Link>
+          
+          {/* Menu de Administração */}
+          <DropdownMenu open={isAdminMenuOpen} onOpenChange={setIsAdminMenuOpen}>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center text-sm font-medium hover:text-water transition-colors">
+                Administração <ChevronDown className="ml-1 h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem asChild>
+                <Link to="/admin/settings" className="flex w-full cursor-pointer">
+                  Configurações
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/admin/products" className="flex w-full cursor-pointer">
+                  Gerenciar Produtos
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/admin/delivery-fees" className="flex w-full cursor-pointer">
+                  Taxas de Entrega
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
         
         <div className="flex items-center space-x-4">
+          {/* Menu de Administração Mobile */}
+          <div className="md:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Settings className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link to="/admin/settings" className="flex w-full cursor-pointer">
+                    Configurações
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/admin/products" className="flex w-full cursor-pointer">
+                    Gerenciar Produtos
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/admin/delivery-fees" className="flex w-full cursor-pointer">
+                    Taxas de Entrega
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          
           <Link to="/cart">
             <Button variant="outline" size="icon" className="relative">
               <ShoppingCart className="h-5 w-5" />
