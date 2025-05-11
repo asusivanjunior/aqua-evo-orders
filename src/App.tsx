@@ -15,7 +15,7 @@ import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import OrderHistory from "./pages/OrderHistory";
-import CRM from "./pages/CRM"; // Nova importação
+import CRM from "./pages/CRM";
 import AdminSettings from "./pages/AdminSettings";
 import AdminProducts from "./pages/AdminProducts";
 import AdminDeliveryFees from "./pages/AdminDeliveryFees";
@@ -23,57 +23,62 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import NotFound from "./pages/NotFound";
 
-// Criar um cliente do React Query fora do componente para evitar recriações
+// Criar um cliente do React Query
 const queryClient = new QueryClient();
 
 const App = () => {
   return (
-    <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <AdminAuthProvider>
-            <CartProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/products/:type" element={<ProductsPage />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/cart" element={<CartPage />} />
-                  <Route path="/checkout" element={<CheckoutPage />} />
-                  <Route path="/order-confirmation" element={<OrderConfirmation />} />
-                  <Route path="/order-history" element={<OrderHistory />} />
-                  <Route path="/crm" element={
-                    <AdminProtectedRoute>
-                      <CRM />
-                    </AdminProtectedRoute>
-                  } /> {/* Nova rota protegida */}
-                  <Route path="/admin/login" element={<AdminLogin />} />
-                  <Route path="/admin/settings" element={
-                    <AdminProtectedRoute>
-                      <AdminSettings />
-                    </AdminProtectedRoute>
-                  } />
-                  <Route path="/admin/products" element={
-                    <AdminProtectedRoute>
-                      <AdminProducts />
-                    </AdminProtectedRoute>
-                  } />
-                  <Route path="/admin/delivery-fees" element={
-                    <AdminProtectedRoute>
-                      <AdminDeliveryFees />
-                    </AdminProtectedRoute>
-                  } />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
-            </CartProvider>
-          </AdminAuthProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AdminAuthProvider>
+          <CartProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/products/:type" element={<ProductsPage />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                <Route path="/order-history" element={<OrderHistory />} />
+                <Route path="/crm" element={
+                  <AdminProtectedRoute>
+                    <CRM />
+                  </AdminProtectedRoute>
+                } />
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin/settings" element={
+                  <AdminProtectedRoute>
+                    <AdminSettings />
+                  </AdminProtectedRoute>
+                } />
+                <Route path="/admin/products" element={
+                  <AdminProtectedRoute>
+                    <AdminProducts />
+                  </AdminProtectedRoute>
+                } />
+                <Route path="/admin/delivery-fees" element={
+                  <AdminProtectedRoute>
+                    <AdminDeliveryFees />
+                  </AdminProtectedRoute>
+                } />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </CartProvider>
+        </AdminAuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 };
 
-export default App;
+// Exportar o App dentro de StrictMode
+const AppWithStrictMode = () => (
+  <StrictMode>
+    <App />
+  </StrictMode>
+);
+
+export default AppWithStrictMode;
