@@ -18,13 +18,18 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Settings, CheckCircle2, XCircle } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { testEvolutionApiConnection } from '@/services/evolutionApiService';
+import { 
+  testEvolutionApiConnection, 
+  getBusinessWhatsAppNumber, 
+  saveBusinessWhatsAppNumber 
+} from '@/services/evolutionApiService';
 
 const settingsSchema = z.object({
   apiUrl: z.string().url({ message: 'URL inválida' }),
   instanceName: z.string().min(1, { message: 'Nome da instância é obrigatório' }),
   apiKey: z.string().min(5, { message: 'API Key precisa ter pelo menos 5 caracteres' }),
   businessPhone: z.string().min(10, { message: 'Telefone deve ter pelo menos 10 dígitos' }),
+  whatsappNumber: z.string().min(10, { message: 'Número do WhatsApp deve ter pelo menos 10 dígitos' }),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -38,14 +43,21 @@ const AdminSettings = () => {
   // Get stored settings from localStorage
   const getStoredSettings = (): SettingsFormValues => {
     const storedSettings = localStorage.getItem('evolutionApiSettings');
+    let settings: Partial<SettingsFormValues> = {};
+    
     if (storedSettings) {
-      return JSON.parse(storedSettings);
+      settings = JSON.parse(storedSettings);
     }
+    
+    // Adicionar o número de WhatsApp do estabelecimento
+    const whatsappNumber = getBusinessWhatsAppNumber();
+    
     return {
-      apiUrl: 'https://your-evolution-api-url.com',
-      instanceName: 'your-instance-name',
-      apiKey: 'your-api-key',
-      businessPhone: '5511999999999',
+      apiUrl: settings.apiUrl || 'https://your-evolution-api-url.com',
+      instanceName: settings.instanceName || 'your-instance-name',
+      apiKey: settings.apiKey || 'your-api-key',
+      businessPhone: settings.businessPhone || '5511999999999',
+      whatsappNumber: whatsappNumber || '+5511914860970',
     };
   };
 
@@ -59,10 +71,20 @@ const AdminSettings = () => {
   const saveSettings = (data: SettingsFormValues) => {
     setIsSaving(true);
     try {
-      localStorage.setItem('evolutionApiSettings', JSON.stringify(data));
+      // Salvar configurações da Evolution API
+      localStorage.setItem('evolutionApiSettings', JSON.stringify({
+        apiUrl: data.apiUrl,
+        instanceName: data.instanceName,
+        apiKey: data.apiKey,
+        businessPhone: data.businessPhone
+      }));
+      
+      // Salvar número de WhatsApp do estabelecimento
+      saveBusinessWhatsAppNumber(data.whatsappNumber);
+      
       toast({
         title: "Configurações salvas",
-        description: "As configurações da Evolution API foram salvas com sucesso.",
+        description: "As configurações foram salvas com sucesso.",
       });
       setTestResult(null); // Reset test result after saving new settings
     } catch (error) {
@@ -83,11 +105,10 @@ const AdminSettings = () => {
     setTestResult(null);
     
     try {
-      const formValues = form.getValues();
-      const result = await testEvolutionApiConnection(formValues);
+      const result = await testEvolutionApiConnection();
       setTestResult({ 
         success: true, 
-        message: "Conexão com a Evolution API estabelecida com sucesso!"
+        message: "Conexão com a API estabelecida com sucesso!"
       });
     } catch (error) {
       console.error('Error testing connection:', error);
@@ -107,7 +128,7 @@ const AdminSettings = () => {
       <div className="container mx-auto px-4 py-8 flex-grow">
         <div className="flex items-center gap-2 mb-6">
           <Settings size={24} />
-          <h1 className="text-2xl font-bold">Configurações da API</h1>
+          <h1 className="text-2xl font-bold">Configurações do Sistema</h1>
         </div>
         
         {testResult && (
@@ -131,14 +152,43 @@ const AdminSettings = () => {
           <CardContent className="p-6">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(saveSettings)} className="space-y-6">
+                {/* Configuração do número de WhatsApp do estabelecimento */}
+                <div className="pb-6 mb-6 border-b border-gray-200">
+                  <h2 className="text-xl font-semibold mb-4">Configuração de WhatsApp</h2>
+                  
+                  <FormField
+                    control={form.control}
+                    name="whatsappNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Número de WhatsApp para Recebimento de Pedidos</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="+5511914860970" 
+                            {...field} 
+                            className="font-mono"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                        <p className="text-sm text-gray-500 mt-1">
+                          Insira o número com código do país e DDD (Ex: +5511912345678)
+                        </p>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                {/* Configurações da Evolution API (mantidas para compatibilidade) */}
+                <h2 className="text-xl font-semibold mb-4">Configurações da API</h2>
+                
                 <FormField
                   control={form.control}
                   name="apiUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>URL da Evolution API</FormLabel>
+                      <FormLabel>URL da API</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://sua-evolution-api.com" {...field} />
+                        <Input placeholder="https://sua-api.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

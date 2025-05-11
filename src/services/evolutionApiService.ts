@@ -33,8 +33,19 @@ const getPaymentMethodText = (method: 'cash' | 'card' | 'pix'): string => {
   }
 };
 
-// Número fixo do estabelecimento
-const BUSINESS_WHATSAPP = "11914860970";
+// Número padrão do estabelecimento (caso não esteja configurado)
+const DEFAULT_BUSINESS_WHATSAPP = "+5511914860970";
+
+// Função para obter o número do WhatsApp do estabelecimento das configurações
+export const getBusinessWhatsAppNumber = (): string => {
+  const savedNumber = localStorage.getItem('businessWhatsAppNumber');
+  return savedNumber || DEFAULT_BUSINESS_WHATSAPP;
+};
+
+// Função para salvar o número do WhatsApp do estabelecimento
+export const saveBusinessWhatsAppNumber = (number: string): void => {
+  localStorage.setItem('businessWhatsAppNumber', number);
+};
 
 export const testEvolutionApiConnection = async (): Promise<boolean> => {
   try {
@@ -52,9 +63,12 @@ export const sendOrderToWhatsApp = async (order: Order): Promise<boolean> => {
   try {
     const formattedMessage = formatOrderForWhatsApp(order);
     
+    // Obter o número do WhatsApp configurado
+    const businessNumber = getBusinessWhatsAppNumber();
+    
     // Preparar o link do WhatsApp
     const encodedMessage = encodeURIComponent(formattedMessage);
-    const whatsappUrl = `https://wa.me/${BUSINESS_WHATSAPP}?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/${businessNumber}?text=${encodedMessage}`;
     
     console.log("Abrindo WhatsApp com URL:", whatsappUrl);
     
