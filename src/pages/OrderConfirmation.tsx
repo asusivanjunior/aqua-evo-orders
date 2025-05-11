@@ -1,11 +1,38 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { CheckCircle } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { CheckCircle, ClockHistory } from 'lucide-react';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
+import { Order } from '@/types';
 
 const OrderConfirmation = () => {
+  const location = useLocation();
+  const order = location.state?.order as Order | undefined;
+  
+  // Salvar o pedido no histórico
+  useEffect(() => {
+    if (order) {
+      // Adicionar data e hora ao pedido
+      const now = new Date();
+      const orderWithTimestamp = {
+        ...order,
+        orderDate: now.toLocaleDateString('pt-BR'),
+        orderTime: now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      };
+      
+      // Buscar histórico existente
+      const existingHistory = localStorage.getItem('orderHistory');
+      const orderHistory = existingHistory ? JSON.parse(existingHistory) : [];
+      
+      // Adicionar novo pedido ao histórico
+      orderHistory.push(orderWithTimestamp);
+      
+      // Salvar no localStorage
+      localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+    }
+  }, [order]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -22,9 +49,18 @@ const OrderConfirmation = () => {
             Recebemos seu pedido com sucesso. Em breve entraremos em contato para confirmar os detalhes da entrega.
           </p>
           
-          <Button asChild className="bg-water hover:bg-water-dark">
-            <Link to="/">Voltar para Início</Link>
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild className="bg-water hover:bg-water-dark">
+              <Link to="/">Voltar para Início</Link>
+            </Button>
+            
+            <Button variant="outline" asChild className="flex gap-2 items-center">
+              <Link to="/order-history">
+                <ClockHistory className="h-4 w-4" />
+                Ver Histórico de Pedidos
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
       

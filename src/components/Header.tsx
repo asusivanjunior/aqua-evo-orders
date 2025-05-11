@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ShoppingCart, Settings, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Settings, ChevronDown, ClockHistory } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
@@ -41,6 +41,9 @@ const Header = () => {
           </Link>
           <Link to="/products/gas" className="text-sm font-medium hover:text-water transition-colors">
             Gás
+          </Link>
+          <Link to="/order-history" className="text-sm font-medium hover:text-water transition-colors flex items-center gap-1">
+            <ClockHistory className="h-4 w-4" /> Meus Pedidos
           </Link>
           <Link to="/about" className="text-sm font-medium hover:text-water transition-colors">
             Sobre
@@ -101,6 +104,11 @@ const Header = () => {
                 <DropdownMenuItem asChild>
                   <Link to={isAdminAuthenticated ? "/admin/delivery-fees" : "/admin/login"} className="flex w-full cursor-pointer">
                     Taxas de Entrega
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/order-history" className="flex w-full cursor-pointer">
+                    Histórico de Pedidos
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>

@@ -14,6 +14,7 @@ import ProductDetail from "./pages/ProductDetail";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderConfirmation from "./pages/OrderConfirmation";
+import OrderHistory from "./pages/OrderHistory"; // Adicionado nova importação
 import AdminSettings from "./pages/AdminSettings";
 import AdminProducts from "./pages/AdminProducts";
 import AdminDeliveryFees from "./pages/AdminDeliveryFees";
@@ -41,6 +42,7 @@ const App = () => {
                   <Route path="/cart" element={<CartPage />} />
                   <Route path="/checkout" element={<CheckoutPage />} />
                   <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                  <Route path="/order-history" element={<OrderHistory />} /> {/* Nova rota */}
                   <Route path="/admin/login" element={<AdminLogin />} />
                   <Route path="/admin/settings" element={
                     <AdminProtectedRoute>
